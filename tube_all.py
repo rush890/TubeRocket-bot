@@ -122,7 +122,7 @@ if __name__ == "__main__":
   host, port = proxy.split(":")
   # host=host[6:]
   pr = {
-      protocol: f"{host}:{port}",
+      protocol+":": f"{host}:{port}",
   }
   print("proxy:",pr)
   process_password(password_to_process,pr)
