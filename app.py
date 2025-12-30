@@ -27,7 +27,7 @@ def save_proxies_to_file(proxies, filename='proxies.txt'):
 
 
 def savepr():
-  api_url = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout=40&proxy_format=protocolipport&format=text"
+  api_url = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout=20&proxy_format=protocolipport&format=text"
   prx = []
   print("starting")
   pr = requests.get(api_url).text

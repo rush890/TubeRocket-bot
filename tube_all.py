@@ -43,7 +43,12 @@ def countdown(seconds):
 BASE_URL="http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
 def get_token(to,pr):
   url = BASE_URL+'version-check'
-  ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
+  try:
+    ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
+  except:
+    print("Retry without proxy....")
+    ver = str(requests.get(url=url).json()['result']['version_android'])
+  
   url = BASE_URL+'signIn'
   head = {'token': to, 'versionCode': ver}
   return requests.post(url=url, headers=head, proxies=pr).json()
@@ -122,7 +127,7 @@ if __name__ == "__main__":
   host, port = proxy.split(":")
   # host=host[6:]
   pr = {
-      protocol+":": f"{host}:{port}",
+      protocol+":": proxy_string,
   }
   print("proxy:",pr)
   process_password(password_to_process,pr)
