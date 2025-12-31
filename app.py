@@ -1,7 +1,4 @@
 import subprocess, time, requests,random
-from replit_keep_alive import keep_alive
-
-keep_alive()
 
 # List of passwords
 user_passwords = [
