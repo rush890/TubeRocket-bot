@@ -68,6 +68,25 @@ USER 10014
 
 # Expose port 8080 for the application
 EXPOSE 8080
+# Also expose Flask port
+EXPOSE 5000
 
-# Start the nginx web server
-CMD ["nginx", "-g", "daemon off;"]
+# Copy backend files from the build stage into the final image for running Flask
+USER root
+RUN mkdir -p /opt/backend && chown 10014:10014 /opt/backend
+COPY --from=build /app/*.py /opt/backend/
+COPY --from=build /app/requirements.txt /opt/backend/ || true
+
+# Install Python3 and pip, then install python requirements
+RUN apk add --no-cache python3 py3-pip \
+    && pip3 install --no-cache-dir -r /opt/backend/requirements.txt || true
+
+# Startup script to run Flask backend and nginx
+RUN printf '%s\n' "#!/bin/sh" "set -e" "python3 /opt/backend/server.py &" "nginx -g 'daemon off;'" > /start.sh \
+    && chmod +x /start.sh
+
+# Switch back to the unprivileged user
+USER 10014
+
+# Start both services (Flask background + nginx)
+CMD ["/start.sh"]
