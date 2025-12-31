@@ -114,7 +114,6 @@ def process_password(password,pr):
 
 
 
-
 if __name__ == "__main__":
   if len(sys.argv) != 2:
     print("Usage: python your_script.py <password>")

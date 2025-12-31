@@ -1,4 +1,4 @@
-import subprocess, time, requests,random
+import subprocess, time, requests, random, sys, os
 
 # List of passwords
 user_passwords = [
@@ -45,9 +45,9 @@ print("starting")
 while True:
   savepr()
   processes = []
-  for password in user_passwords:
-    command = ['python', 'tube_all.py', password]
-    process = subprocess.Popen(command)
+    for password in user_passwords:
+      command = [sys.executable, os.path.join(os.path.dirname(__file__), 'tube_all.py'), password]
+      process = subprocess.Popen(command)
     processes.append(process)
     time.sleep(10)
 

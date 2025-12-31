@@ -47,5 +47,5 @@ def logs():
         return Response(f.read(), mimetype='text/plain')
 
 if __name__ == '__main__':
-    # listen on localhost:5000
-    app.run(host='127.0.0.1', port=5000)
+    # listen on all interfaces inside container
+    app.run(host='0.0.0.0', port=5000)
