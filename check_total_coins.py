@@ -69,8 +69,10 @@ def verify_proxy(proxy_string):
         }
         url = BASE_URL + 'version-check'
         response = requests.get(url=url, proxies=pr, timeout=10)
-        response.json()
-        print(f"Proxy verified: {proxy_string}")
+        res=response.json()
+
+        version=res['result']['version_android']
+        print(f"Proxy verified: {proxy_string} Using version: {version}")
         return True
     except Exception as e:
         print(f"Proxy failed: {proxy_string} - {e}")
@@ -136,9 +138,19 @@ def get_total_coins():
             
             print(f"[{idx}/{len(user_passwords)}] Processing account {idx}...", end=" ")
             
-            # Get token using password and proxy
-            token_response = get_token(password, proxy_dict)
-            token = token_response['result']['token']
+            # Get token using password and proxy with retry logic
+            token = None
+            for retry_attempt in range(3):
+                try:
+                    token_response = get_token(password, proxy_dict)
+                    token = token_response['result']['token']
+                    break
+                except Exception as retry_error:
+                    if retry_attempt < 2:
+                        print(f"\nRetry {retry_attempt + 1}/3...", end=" ")
+                        time.sleep(1)
+                    else:
+                        raise retry_error
             
             # Get coins using token and proxy
             current_coins = get_coins(token, proxy_dict)
@@ -179,7 +191,7 @@ def save_proxies_to_file(proxies, filename='proxies.txt'):
     print(f"Error: {e}")
 
 def savepr():
-  api_url = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout=10&proxy_format=protocolipport&format=text"
+  api_url = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout=20&proxy_format=protocolipport&format=text"
   prx = []
   print("starting")
   pr = requests.get(api_url).text
