@@ -93,9 +93,34 @@ def save_coin_history(history):
     try:
         with open(COIN_HISTORY_FILE, 'w') as f:
             json.dump(history, f, indent=2)
-        print(f"\n✓ Coin history saved to {COIN_HISTORY_FILE}")
+        print(f"✓ Coin history saved to {COIN_HISTORY_FILE}")
     except Exception as e:
         print(f"Error saving coin history: {e}")
+
+
+def save_metrics_to_txt(total_coins, total_earned, account_coins):
+    """Save metrics report to text file"""
+    try:
+        with open('coin_metrics.txt', 'w') as f:
+            f.write("=" * 60 + "\n")
+            f.write("TOTAL COINS CHECKER - REPORT\n")
+            f.write("=" * 60 + "\n\n")
+            
+            f.write(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            
+            f.write("-" * 60 + "\n")
+            f.write("SUMMARY\n")
+            f.write("-" * 60 + "\n")
+            f.write(f"Total Coins Across All Accounts: {total_coins}\n")
+            f.write(f"Total Coins in Hours: {total_coins/3600:.2f} hours\n")
+            f.write(f"Total Coins Earned (Since Last Check): {total_earned}\n")
+            f.write(f"Total Earned in Hours: {total_earned/3600:.2f} hours\n")
+            f.write(f"Number of Accounts Checked: {len(account_coins)}\n\n")
+            f.write("-" * 60 + "\n")
+        
+        print(f"✓ Metrics saved to coin_metrics.txt")
+    except Exception as e:
+        print(f"Error saving metrics: {e}")
 
 
 def get_total_coins():
@@ -218,6 +243,7 @@ if __name__ == "__main__":
                 'timestamp': data['timestamp']
             }
         save_coin_history(history_to_save)
+        save_metrics_to_txt(total_coins, total_earned, account_coins)
         
         print("\n" + "-" * 60)
         print("Coins per Account:")
@@ -232,8 +258,8 @@ if __name__ == "__main__":
         print("\n" + "=" * 60)
         print("SUMMARY")
         print("=" * 60)
-        print(f"\nTotal Coins Across All Accounts: {total_coins}")
-        print(f"Total Coins Earned (Since Last Check): {total_earned}")
+        print(f"\nTotal Coins Across All Accounts: {total_coins} and hours: {total_coins/3600:.2f} hours")
+        print(f"Total Coins Earned (Since Last Check): {total_earned} and hours: {total_earned/3600:.2f} hours")
         print(f"Number of Accounts Checked: {len(account_coins)}")
         
     else:
