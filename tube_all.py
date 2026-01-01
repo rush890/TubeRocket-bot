@@ -63,6 +63,7 @@ def get_video_info(to,pr):
 
 
 def receive_reward(to, video_id,pr):
+  time.sleep(2)
   url = BASE_URL+'video'
   head = {'token': to, 'Content-Type': 'application/json; charset=UTF-8'}
   data = '{"id":"' + video_id + '","playCount":0,"playSecond":0,"boost":0,"status":""}'
@@ -72,6 +73,22 @@ def receive_reward(to, video_id,pr):
 
 
 cr_sum = 0
+
+
+def verify_proxy(proxy_string):
+  try:
+    protocol, proxy = proxy_string.split("://")
+    pr = {
+        protocol+":": proxy_string,
+    }
+    url = BASE_URL+'version-check'
+    response = requests.get(url=url, proxies=pr, timeout=10)
+    response.json()
+    print(f"Proxy verified: {proxy_string}")
+    return True
+  except Exception as e:
+    print(f"Proxy failed: {proxy_string} - {e}")
+    return False
 
 
 def process_password(password,pr):
@@ -121,11 +138,19 @@ if __name__ == "__main__":
     sys.exit(1)
 
   password_to_process = sys.argv[1]
-  proxy_string=get_random_proxy()
-
+  
+  # Verify proxy before processing
+  proxy_string = None
+  while True:
+    proxy_string = get_random_proxy()
+    if proxy_string is None:
+      print("No proxies available.")
+      sys.exit(1)
+    
+    if verify_proxy(proxy_string):
+      break
+  
   protocol, proxy = proxy_string.split("://")
-  host, port = proxy.split(":")
-  # host=host[6:]
   pr = {
       protocol+":": proxy_string,
   }
