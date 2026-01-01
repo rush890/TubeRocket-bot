@@ -43,12 +43,7 @@ def countdown(seconds):
 BASE_URL="http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
 def get_token(to,pr):
   url = BASE_URL+'version-check'
-  try:
-    ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
-  except:
-    print("Retry without proxy....")
-    ver = str(requests.get(url=url).json()['result']['version_android'])
-  
+  ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
   url = BASE_URL+'signIn'
   head = {'token': to, 'versionCode': ver}
   return requests.post(url=url, headers=head, proxies=pr).json()
@@ -72,6 +67,19 @@ def receive_reward(to, video_id,pr):
   return res['result']['coin']
 
 
+def get_coin_balance(to, pr):
+  """Get current coin balance for an account"""
+  try:
+    url = BASE_URL + 'member'
+    head = {'token': to}
+    response = requests.get(url=url, headers=head, proxies=pr).json()
+    if 'result' not in response or 'coin' not in response['result']:
+      raise Exception(f"Invalid response format: {response}")
+    return response['result']['coin']
+  except Exception as e:
+    raise Exception(f"Error getting coin balance: {str(e)}")
+
+
 cr_sum = 0
 
 
@@ -83,8 +91,9 @@ def verify_proxy(proxy_string):
     }
     url = BASE_URL+'version-check'
     response = requests.get(url=url, proxies=pr, timeout=10)
-    response.json()
-    print(f"Proxy verified: {proxy_string}")
+    res=response.json()
+    version=res['result']['version_android']
+    print(f"Proxy verified: {proxy_string} Using version: {version}")
     return True
   except Exception as e:
     print(f"Proxy failed: {proxy_string} - {e}")
@@ -97,11 +106,20 @@ def process_password(password,pr):
 
   while True:
     try:
-      to = get_token(password,pr)['result']['token']
-      coin = (requests.get(url=BASE_URL+'member',
-                           headers={
-                               'token': to
-                           }, proxies=pr).json()['result']['coin'])
+      # Get token with retry logic up to 3 times
+      to = None
+      for retry_attempt in range(3):
+        try:
+          to = get_token(password,pr)['result']['token']
+          break
+        except Exception as retry_error:
+          if retry_attempt < 2:
+            print(f"Retry get_token step {retry_attempt + 1}/3...")
+            time.sleep(1)
+          else:
+            raise retry_error
+      
+      coin = get_coin_balance(to, pr)
       print(coin)
       while True:
         try:
