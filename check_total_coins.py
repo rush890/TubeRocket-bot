@@ -168,12 +168,31 @@ def get_total_coins():
     
     return total_coins, total_earned, account_coins
 
+def save_proxies_to_file(proxies, filename='proxies.txt'):
+  try:
+    with open(filename, 'w') as file:
+      for proxy in proxies:
+        if(proxy):
+          file.write(f"{proxy}")
+    print(f"Proxies saved successfull Xy to {filename}")
+  except Exception as e:
+    print(f"Error: {e}")
+
+def savepr():
+  api_url = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout=10&proxy_format=protocolipport&format=text"
+  prx = []
+  print("starting")
+  pr = requests.get(api_url).text
+  pr = pr.split("\n")
+  print("Found proxies", len(pr))
+  save_proxies_to_file(pr)
+
 
 if __name__ == "__main__":
     print("=" * 60)
     print("TOTAL COINS CHECKER")
     print("=" * 60 + "\n")
-    
+    savepr()
     result = get_total_coins()
     
     if result:
