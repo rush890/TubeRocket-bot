@@ -3,6 +3,8 @@ import requests
 import random
 import sys
 
+from app import savepr
+
 
 def read_proxies(file_path):
   with open(file_path, 'r') as file:
@@ -46,6 +48,7 @@ def get_token(to,pr):
   ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
   url = BASE_URL+'signIn'
   head = {'token': to, 'versionCode': ver}
+  time.sleep(1)
   return requests.post(url=url, headers=head, proxies=pr).json()
 
 
@@ -86,6 +89,7 @@ cr_sum = 0
 def verify_proxy(proxy_string, password):
   """Verify proxy works for both version-check AND signIn"""
   try:
+    time.sleep(2)
     protocol, proxy = proxy_string.split("://")
     pr = {
         protocol+":": proxy_string,
@@ -99,6 +103,7 @@ def verify_proxy(proxy_string, password):
     print(f"Proxy version-check passed: {proxy_string}")
     
     # Step 2: Verify signIn also works with this proxy
+    time.sleep(1)
     url = BASE_URL+'signIn'
     head = {'token': password, 'versionCode': str(version)}
     sign_in_response = requests.post(url=url, headers=head, proxies=pr, timeout=10)
@@ -212,8 +217,10 @@ if __name__ == "__main__":
   while True:
     proxy_string = get_random_proxy()
     if proxy_string is None:
-      print("No proxies available.")
-      sys.exit(1)
+      print("No proxies available, waiting 2 min and fetching new roxy list...")
+      time.sleep(120)
+      savepr(40)
+      continue
     
     if verify_proxy(proxy_string, password_to_process):
       break

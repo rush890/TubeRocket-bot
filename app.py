@@ -29,8 +29,8 @@ def save_proxies_to_file(proxies, filename='proxies.txt'):
     print(f"Error: {e}")
 
 
-def savepr():
-  api_url = "https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout=20&proxy_format=protocolipport&format=text"
+def savepr(time_out=20):
+  api_url = f"https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout={time_out}&proxy_format=protocolipport&format=text"
   prx = []
   print("starting")
   pr = requests.get(api_url).text
@@ -42,26 +42,26 @@ def savepr():
 def get_random_wait_time():
   return random.uniform(20 * 60, 40 * 60)
 
+if __name__ == "__main__":
+  print("starting")
+  # Run process_password function for each password in a separate process
+  while True:
+    savepr()
+    processes = []
+    for password in user_passwords:
+      command = ['python', 'tube_all.py', password]
+      process = subprocess.Popen(command)
+      processes.append(process)
+      time.sleep(10)
 
-print("starting")
-# Run process_password function for each password in a separate process
-while True:
-  savepr()
-  processes = []
-  for password in user_passwords:
-    command = ['python', 'tube_all.py', password]
-    process = subprocess.Popen(command)
-    processes.append(process)
-    time.sleep(10)
+    # Generate a random wait time
+    wait_time = get_random_wait_time()
 
-  # Generate a random wait time
-  wait_time = get_random_wait_time()
+    print(f"Waiting for {wait_time / 60:.2f} minutes before stopping processes.")
+    time.sleep(wait_time)
 
-  print(f"Waiting for {wait_time / 60:.2f} minutes before stopping processes.")
-  time.sleep(wait_time)
+    # Stop all processes
+    for process in processes:
+      process.terminate()
 
-  # Stop all processes
-  for process in processes:
-    process.terminate()
-
-  print("Processes stopped. Restarting.")
+    print("Processes stopped. Restarting.")
