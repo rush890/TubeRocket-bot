@@ -40,7 +40,7 @@ def savepr():
 
 
 def get_random_wait_time():
-  return random.uniform(30 * 60, 60 * 60)
+  return random.uniform(20 * 60, 40 * 60)
 
 
 print("starting")

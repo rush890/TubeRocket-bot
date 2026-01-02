@@ -83,20 +83,36 @@ def get_coin_balance(to, pr):
 cr_sum = 0
 
 
-def verify_proxy(proxy_string):
+def verify_proxy(proxy_string, password):
+  """Verify proxy works for both version-check AND signIn"""
   try:
     protocol, proxy = proxy_string.split("://")
     pr = {
         protocol+":": proxy_string,
     }
+    
+    # Step 1: Check version-check
     url = BASE_URL+'version-check'
     response = requests.get(url=url, proxies=pr, timeout=10)
     res=response.json()
     version=res['result']['version_android']
-    print(f"Proxy verified: {proxy_string} Using version: {version}")
-    return True
+    print(f"Proxy version-check passed: {proxy_string}")
+    
+    # Step 2: Verify signIn also works with this proxy
+    url = BASE_URL+'signIn'
+    head = {'token': password, 'versionCode': str(version)}
+    sign_in_response = requests.post(url=url, headers=head, proxies=pr, timeout=10)
+    sign_in_result = sign_in_response.json()
+    
+    if 'result' in sign_in_result and 'token' in sign_in_result['result']:
+      print(f"Proxy fully verified (both version-check and signIn): {proxy_string}")
+      return True
+    else:
+      print(f"Proxy failed signIn: {proxy_string}")
+      return False
+      
   except Exception as e:
-    print(f"Proxy failed: {proxy_string} - {e}")
+    print(f"Proxy failed verification: {proxy_string} - {e}")
     return False
 
 
@@ -107,26 +123,35 @@ def process_password(password,pr):
 
   while True:
     try:
-      # Get token with retry logic up to 3 times
+      # Get token with retry logic - keep trying until successful
       to = None
-      for retry_attempt in range(3):
+      token_attempts = 0
+      max_token_attempts = 5
+      
+      while token_attempts < max_token_attempts:
+        token_attempts += 1
         try:
           to = get_token(password, current_proxy)['result']['token']
+          print(f"Token acquired successfully on attempt {token_attempts}")
           break
         except Exception as retry_error:
-          if retry_attempt < 2:
-            print(f"Retry get_token step {retry_attempt + 1}/3...")
-            time.sleep(1)
-          else:
-            # Proxy failed, get a new one
-            print(f"Proxy failed during token fetch, getting new proxy...")
+          print(f"Token fetch attempt {token_attempts}/{max_token_attempts} failed: {str(retry_error)}")
+          if token_attempts < max_token_attempts:
+            # Get a new proxy and fully verify it (both version-check and signIn) before retrying
             new_proxy_string = get_random_proxy()
             if new_proxy_string:
-              if verify_proxy(new_proxy_string):
+              if verify_proxy(new_proxy_string, password):
                 protocol, proxy = new_proxy_string.split("://")
                 current_proxy = {protocol+":": new_proxy_string}
-                print(f"Switched to new proxy: {new_proxy_string}")
-            raise retry_error
+                print(f"Switched to new verified proxy: {new_proxy_string}")
+              else:
+                print(f"New proxy failed verification, trying another...")
+              time.sleep(1)
+            else:
+              print("No more proxies available, waiting before retry...")
+              time.sleep(5)
+          else:
+            raise Exception(f"Failed to get token after {max_token_attempts} attempts")
       
       coin = get_coin_balance(to, current_proxy)
       print(coin)
@@ -154,23 +179,23 @@ def process_password(password,pr):
             print(f"Error occurred, attempting to get new proxy: {str(e)}")
             new_proxy_string = get_random_proxy()
             if new_proxy_string:
-              if verify_proxy(new_proxy_string):
+              if verify_proxy(new_proxy_string, password):
                 protocol, proxy = new_proxy_string.split("://")
                 current_proxy = {protocol+":": new_proxy_string}
-                print(f"Switched to new proxy: {new_proxy_string}")
+                print(f"Switched to new verified proxy: {new_proxy_string}")
           #print("Error in get_video_info", e)
           time.sleep(random.randint(200, 270))
           break
     except Exception as e:
-      print("Error in get_token waiting and fetch new proxy",e)
+      print("Error in get_token, waiting before retry:", str(e))
       time.sleep(150)
       # Get new proxy on token error
       new_proxy_string = get_random_proxy()
       if new_proxy_string:
-        if verify_proxy(new_proxy_string):
+        if verify_proxy(new_proxy_string, password):
           protocol, proxy = new_proxy_string.split("://")
           current_proxy = {protocol+":": new_proxy_string}
-          print(f"Token error, switched to new proxy: {new_proxy_string}")
+          print(f"Token error, switched to new verified proxy: {new_proxy_string}")
 
 
 
@@ -190,7 +215,7 @@ if __name__ == "__main__":
       print("No proxies available.")
       sys.exit(1)
     
-    if verify_proxy(proxy_string):
+    if verify_proxy(proxy_string, password_to_process):
       break
   
   protocol, proxy = proxy_string.split("://")
