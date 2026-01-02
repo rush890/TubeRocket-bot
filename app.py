@@ -1,7 +1,7 @@
 import subprocess, time, requests,random
 from replit_keep_alive import keep_alive
 
-keep_alive()
+
 
 # List of passwords
 user_passwords = [
@@ -43,6 +43,7 @@ def get_random_wait_time():
 
 if __name__ == "__main__":
   print("TubeRocket Automation Started..")
+  keep_alive()
   # Run process_password function for each password in a separate process
   while True:
     print("Fetching proxies")
