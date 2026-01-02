@@ -103,6 +103,7 @@ def verify_proxy(proxy_string):
 def process_password(password,pr):
   global cr_sum
   err_count = 0
+  current_proxy = pr
 
   while True:
     try:
@@ -110,23 +111,31 @@ def process_password(password,pr):
       to = None
       for retry_attempt in range(3):
         try:
-          to = get_token(password,pr)['result']['token']
+          to = get_token(password, current_proxy)['result']['token']
           break
         except Exception as retry_error:
           if retry_attempt < 2:
             print(f"Retry get_token step {retry_attempt + 1}/3...")
             time.sleep(1)
           else:
+            # Proxy failed, get a new one
+            print(f"Proxy failed during token fetch, getting new proxy...")
+            new_proxy_string = get_random_proxy()
+            if new_proxy_string:
+              if verify_proxy(new_proxy_string):
+                protocol, proxy = new_proxy_string.split("://")
+                current_proxy = {protocol+":": new_proxy_string}
+                print(f"Switched to new proxy: {new_proxy_string}")
             raise retry_error
       
-      coin = get_coin_balance(to, pr)
+      coin = get_coin_balance(to, current_proxy)
       print(coin)
       while True:
         try:
-          video_id, tg = get_video_info(to,pr)
+          video_id, tg = get_video_info(to, current_proxy)
           print("watching for", tg)
           countdown(tg + 1)
-          nwcoin = receive_reward(to, video_id,pr)
+          nwcoin = receive_reward(to, video_id, current_proxy)
           try:
             cr_sum += (nwcoin - coin)
             print("Coins Earned are *****:", nwcoin - coin)
@@ -140,12 +149,28 @@ def process_password(password,pr):
             print("User cooldown!!!!!!!!!!", password)
             err_count = 0
             time.sleep(5000)
+          else:
+            # Proxy might have failed, try to get a new one
+            print(f"Error occurred, attempting to get new proxy: {str(e)}")
+            new_proxy_string = get_random_proxy()
+            if new_proxy_string:
+              if verify_proxy(new_proxy_string):
+                protocol, proxy = new_proxy_string.split("://")
+                current_proxy = {protocol+":": new_proxy_string}
+                print(f"Switched to new proxy: {new_proxy_string}")
           #print("Error in get_video_info", e)
           time.sleep(random.randint(200, 270))
           break
     except Exception as e:
-      print("Error in get_token",e)
+      print("Error in get_token waiting and fetch new proxy",e)
       time.sleep(150)
+      # Get new proxy on token error
+      new_proxy_string = get_random_proxy()
+      if new_proxy_string:
+        if verify_proxy(new_proxy_string):
+          protocol, proxy = new_proxy_string.split("://")
+          current_proxy = {protocol+":": new_proxy_string}
+          print(f"Token error, switched to new proxy: {new_proxy_string}")
 
 
 
