@@ -15,7 +15,6 @@ user_passwords = [
     '429235c0d1ca11eca19befd8b74558ba', 'f3161e40a63311ee8dec29e7b2d7d8ec',
     '397a7fb0d1e811eca462957b5204fdf1'
 ]
-print("Getting proxies")
 
 
 def save_proxies_to_file(proxies, filename='proxies.txt'):
@@ -43,9 +42,10 @@ def get_random_wait_time():
   return random.uniform(20 * 60, 40 * 60)
 
 if __name__ == "__main__":
-  print("starting")
+  print("TubeRocket Automation Started..")
   # Run process_password function for each password in a separate process
   while True:
+    print("Fetching proxies")
     savepr()
     processes = []
     for password in user_passwords:
