@@ -30,14 +30,11 @@ def read_proxies(file_path):
 def get_token(password, proxy_dict):
     """Get token using password and proxy"""
     url = BASE_URL + 'version-check'
-    try:
-        ver = str(requests.get(url=url, proxies=proxy_dict, timeout=10).json()['result']['version_android'])
-    except:
-        print("Retry without proxy....")
-        ver = str(requests.get(url=url, timeout=10).json()['result']['version_android'])
+    ver = str(requests.get(url=url, proxies=proxy_dict, timeout=10).json()['result']['version_android'])
     
     url = BASE_URL + 'signIn'
     head = {'token': password, 'versionCode': ver}
+    time.sleep(2)
     return requests.post(url=url, headers=head, proxies=proxy_dict, timeout=10).json()
 
 
