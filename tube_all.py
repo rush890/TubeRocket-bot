@@ -48,11 +48,12 @@ def get_token(to,pr):
   ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
   url = BASE_URL+'signIn'
   head = {'token': to, 'versionCode': ver}
-  time.sleep(1)
+  time.sleep(2)
   return requests.post(url=url, headers=head, proxies=pr).json()
 
 
 def get_video_info(to,pr):
+  time.sleep(1)
   url = BASE_URL+'video'
   head = {'token': to}
   dl = requests.get(url=url, headers=head, proxies=pr).json()
@@ -61,7 +62,7 @@ def get_video_info(to,pr):
 
 
 def receive_reward(to, video_id,pr):
-  time.sleep(2)
+  time.sleep(1)
   url = BASE_URL+'video'
   head = {'token': to, 'Content-Type': 'application/json; charset=UTF-8'}
   data = '{"id":"' + video_id + '","playCount":0,"playSecond":0,"boost":0,"status":""}'
@@ -73,6 +74,7 @@ def receive_reward(to, video_id,pr):
 def get_coin_balance(to, pr):
   """Get current coin balance for an account"""
   try:
+    time.sleep(1)
     url = BASE_URL + 'member'
     head = {'token': to}
     response = requests.get(url=url, headers=head, proxies=pr).json()
@@ -86,7 +88,7 @@ def get_coin_balance(to, pr):
 cr_sum = 0
 
 
-def verify_proxy(proxy_string, password):
+def verify_proxy(proxy_string):
   """Verify proxy works for both version-check AND signIn"""
   try:
     time.sleep(2)
@@ -100,24 +102,11 @@ def verify_proxy(proxy_string, password):
     response = requests.get(url=url, proxies=pr, timeout=10)
     res=response.json()
     version=res['result']['version_android']
-    print(f"Proxy version-check passed: {proxy_string}")
-    
-    # Step 2: Verify signIn also works with this proxy
-    time.sleep(1)
-    url = BASE_URL+'signIn'
-    head = {'token': password, 'versionCode': str(version)}
-    sign_in_response = requests.post(url=url, headers=head, proxies=pr, timeout=10)
-    sign_in_result = sign_in_response.json()
-    
-    if 'result' in sign_in_result and 'token' in sign_in_result['result']:
-      print(f"Proxy fully verified (both version-check and signIn): {proxy_string}")
-      return True
-    else:
-      print(f"Proxy failed signIn: {proxy_string}")
-      return False
+    print(f"Proxy version-check passed: {proxy_string} using version: {version}")
+    return True
       
   except Exception as e:
-    print(f"Proxy failed verification: {proxy_string} - {e}")
+    print(f"Proxy failed verification: {proxy_string} - {e} \n Getting response as: {res}")
     return False
 
 
@@ -145,7 +134,7 @@ def process_password(password,pr):
             # Get a new proxy and fully verify it (both version-check and signIn) before retrying
             new_proxy_string = get_random_proxy()
             if new_proxy_string:
-              if verify_proxy(new_proxy_string, password):
+              if verify_proxy(new_proxy_string):
                 protocol, proxy = new_proxy_string.split("://")
                 current_proxy = {protocol+":": new_proxy_string}
                 print(f"Switched to new verified proxy: {new_proxy_string}")
@@ -184,7 +173,7 @@ def process_password(password,pr):
             print(f"Error occurred, attempting to get new proxy: {str(e)}")
             new_proxy_string = get_random_proxy()
             if new_proxy_string:
-              if verify_proxy(new_proxy_string, password):
+              if verify_proxy(new_proxy_string):
                 protocol, proxy = new_proxy_string.split("://")
                 current_proxy = {protocol+":": new_proxy_string}
                 print(f"Switched to new verified proxy: {new_proxy_string}")
@@ -197,7 +186,7 @@ def process_password(password,pr):
       # Get new proxy on token error
       new_proxy_string = get_random_proxy()
       if new_proxy_string:
-        if verify_proxy(new_proxy_string, password):
+        if verify_proxy(new_proxy_string):
           protocol, proxy = new_proxy_string.split("://")
           current_proxy = {protocol+":": new_proxy_string}
           print(f"Token error, switched to new verified proxy: {new_proxy_string}")
@@ -222,7 +211,7 @@ if __name__ == "__main__":
       savepr(40)
       continue
     
-    if verify_proxy(proxy_string, password_to_process):
+    if verify_proxy(proxy_string):
       break
   
   protocol, proxy = proxy_string.split("://")
