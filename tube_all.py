@@ -3,9 +3,6 @@ import requests
 import random
 import sys
 
-from app import savepr
-
-
 def read_proxies(file_path):
   with open(file_path, 'r') as file:
     proxies = [line.strip() for line in file.readlines()]
@@ -206,10 +203,8 @@ if __name__ == "__main__":
   while True:
     proxy_string = get_random_proxy()
     if proxy_string is None:
-      print("No proxies available, waiting 2 min and fetching new roxy list...")
-      time.sleep(120)
-      savepr(40)
-      continue
+      print("No proxies available.")
+      sys.exit(1)
     
     if verify_proxy(proxy_string):
       break

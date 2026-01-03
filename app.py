@@ -1,7 +1,6 @@
 import subprocess, time, requests,random
 from replit_keep_alive import keep_alive
-
-
+keep_alive()
 
 # List of passwords
 user_passwords = [
@@ -17,13 +16,14 @@ user_passwords = [
 ]
 
 
-def save_proxies_to_file(proxies, filename='proxies.txt'):
+def save_proxies_to_file(proxies, count, filename='proxies.txt'):
   try:
     with open(filename, 'w') as file:
       for proxy in proxies:
         if(proxy):
           file.write(f"{proxy}")
-    print(f"Proxies saved successfull Xy to {filename}")
+          
+    print(f"Successfully saved {count} proxies to {filename}.")
   except Exception as e:
     print(f"Error: {e}")
 
@@ -31,38 +31,36 @@ def save_proxies_to_file(proxies, filename='proxies.txt'):
 def savepr(time_out=20):
   api_url = f"https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout={time_out}&proxy_format=protocolipport&format=text"
   prx = []
-  print("starting")
   pr = requests.get(api_url).text
   pr = pr.split("\n")
-  print("Found proxies", len(pr))
-  save_proxies_to_file(pr)
+  # print("Found proxies", len(pr))
+  save_proxies_to_file(pr,len(pr))
 
 
 def get_random_wait_time():
   return random.uniform(20 * 60, 40 * 60)
 
-if __name__ == "__main__":
-  print("TubeRocket Automation Started..")
-  keep_alive()
-  # Run process_password function for each password in a separate process
-  while True:
-    print("Fetching proxies")
-    savepr()
-    processes = []
-    for password in user_passwords:
-      command = ['python', 'tube_all.py', password]
-      process = subprocess.Popen(command)
-      processes.append(process)
-      time.sleep(10)
 
-    # Generate a random wait time
-    wait_time = get_random_wait_time()
+print("----------- TubeRocket Automation Started... -----------")
+# Run process_password function for each password in a separate process
+while True:
+  print("Fetching proxies")
+  savepr()
+  processes = []
+  for password in user_passwords:
+    command = ['python', 'tube_all.py', password]
+    process = subprocess.Popen(command)
+    processes.append(process)
+    time.sleep(10)
 
-    print(f"Waiting for {wait_time / 60:.2f} minutes before stopping processes.")
-    time.sleep(wait_time)
+  # Generate a random wait time
+  wait_time = get_random_wait_time()
 
-    # Stop all processes
-    for process in processes:
-      process.terminate()
+  print(f"Waiting for {wait_time / 60:.2f} minutes before stopping processes.")
+  time.sleep(wait_time)
 
-    print("Processes stopped. Restarting.")
+  # Stop all processes
+  for process in processes:
+    process.terminate()
+
+  print("Processes stopped. Restarting.")
