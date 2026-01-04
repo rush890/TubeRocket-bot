@@ -162,14 +162,14 @@ def get_total_coins():
             
             # Get token using password and proxy with retry logic
             token = None
-            for retry_attempt in range(3):
+            for retry_attempt in range(5):
                 try:
                     token_response = get_token(password, proxy_dict)
                     token = token_response['result']['token']
                     break
                 except Exception as retry_error:
                     if retry_attempt < 2:
-                        print(f"\nRetry {retry_attempt + 1}/3...", end=" ")
+                        print(f"\nRetry {retry_attempt + 1}/5...", end=" ")
                         time.sleep(1)
                     else:
                         raise retry_error
