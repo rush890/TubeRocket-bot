@@ -20,7 +20,7 @@ def get_fresh_proxy(
         dict | None   -> requests-compatible proxy dict
     """
 
-    url = "http://pubproxy.com/api/proxy?type=http?get=true?post=true"
+    url = "http://pubproxy.com/api/proxy"
 
     for attempt in range(1, retries + 1):
         try:
@@ -73,11 +73,13 @@ def get_token(to, pr, retries=3):
       url = BASE_URL+'signIn'
       head = {'token': to, 'versionCode': ver}
       time.sleep(2)
-      return requests.post(url=url, headers=head, proxies=pr, timeout=10).json()
+      res=requests.post(url=url, headers=head, proxies=pr, timeout=10).json()
+      return res['result']['token']
     except Exception as e:
       print("Error in sing in step, retrying:", str(e))
       time.sleep(2)
   raise Exception("Error while singin waiting and retry")
+
 
 def get_video_info(to,pr):
   time.sleep(1)
@@ -152,7 +154,7 @@ def process_password(password,pr):
       while token_attempts < max_token_attempts:
         token_attempts += 1
         try:
-          to = get_token(password, current_proxy)['result']['token']
+          to = get_token(password, current_proxy)
           print(f"Token acquired successfully on attempt {token_attempts}")
           break
         except Exception as retry_error:
