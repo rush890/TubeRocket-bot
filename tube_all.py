@@ -40,13 +40,20 @@ def countdown(seconds):
     time.sleep(1)
 
 BASE_URL="http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
-def get_token(to,pr):
-  url = BASE_URL+'version-check'
-  ver = str(requests.get(url=url, proxies=pr).json()['result']['version_android'])
-  url = BASE_URL+'signIn'
-  head = {'token': to, 'versionCode': ver}
-  time.sleep(2)
-  return requests.post(url=url, headers=head, proxies=pr).json()
+def get_token(to, pr, retries=3):
+  for _ in range(retries):
+    try:
+      url = BASE_URL+'version-check'
+      ver = str(requests.get(url=url, proxies=pr, timeout=10).json()['result']['version_android'])
+      url = BASE_URL+'signIn'
+      head = {'token': to, 'versionCode': ver}
+      time.sleep(2)
+      res=requests.post(url=url, headers=head, proxies=pr, timeout=10).json()
+      return res['result']['token']
+    except Exception as e:
+      print("Error in sign-in step, retrying:", str(e))
+      time.sleep(2)
+  raise Exception("Error while signin waiting and retry with new proxy")
 
 
 def get_video_info(to,pr):
@@ -122,7 +129,7 @@ def process_password(password,pr):
       while token_attempts < max_token_attempts:
         token_attempts += 1
         try:
-          to = get_token(password, current_proxy)['result']['token']
+          to = get_token(password, current_proxy)
           print(f"Token acquired successfully on attempt {token_attempts}")
           break
         except Exception as retry_error:
