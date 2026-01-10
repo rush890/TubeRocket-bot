@@ -27,15 +27,20 @@ def read_proxies(file_path):
     return proxies
 
 
-def get_token(password, proxy_dict):
-    """Get token using password and proxy"""
-    url = BASE_URL + 'version-check'
-    ver = str(requests.get(url=url, proxies=proxy_dict, timeout=10).json()['result']['version_android'])
-    
-    url = BASE_URL + 'signIn'
-    head = {'token': password, 'versionCode': ver}
-    time.sleep(2)
-    return requests.post(url=url, headers=head, proxies=proxy_dict, timeout=10).json()
+def get_token(to, pr, retries=3):
+  for _ in range(retries):
+    try:
+      url = BASE_URL+'version-check'
+      ver = str(requests.get(url=url, proxies=pr, timeout=10).json()['result']['version_android'])
+      url = BASE_URL+'signIn'
+      head = {'token': to, 'versionCode': ver}
+      time.sleep(2)
+      res=requests.post(url=url, headers=head, proxies=pr, timeout=10).json()
+      return res['result']['token']
+    except Exception as e:
+      print("Error in sign-in step, retrying:", str(e))
+      time.sleep(2)
+  raise Exception("Error while signin waiting and retry with new proxy")
 
 
 def get_coins(token, proxy_dict):
@@ -164,8 +169,7 @@ def get_total_coins():
             token = None
             for retry_attempt in range(5):
                 try:
-                    token_response = get_token(password, proxy_dict)
-                    token = token_response['result']['token']
+                    token = get_token(password, proxy_dict)
                     break
                 except Exception as retry_error:
                     if retry_attempt < 2:
