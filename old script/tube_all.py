@@ -49,6 +49,8 @@ def get_token(to, pr, retries=3):
       head = {'token': to, 'versionCode': ver}
       time.sleep(2)
       res=requests.post(url=url, headers=head, proxies=pr, timeout=10).json()
+      print(to)
+      print("Signed in successfully, token obtained{}".format(res['result']['token']))
       return res['result']['token']
     except Exception as e:
       print("Error in sign-in step, retrying:", str(e))

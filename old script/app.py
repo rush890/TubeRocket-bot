@@ -1,6 +1,6 @@
 import subprocess, time, requests,random
-from replit_keep_alive import keep_alive
-keep_alive()
+# from replit_keep_alive import keep_alive
+# keep_alive()
 
 # List of passwords
 user_passwords = [
@@ -48,7 +48,7 @@ while True:
   savepr()
   processes = []
   for password in user_passwords:
-    command = ['python', 'tube_all.py', password]
+    command = ['python', 'old script/tube_all.py', password]
     process = subprocess.Popen(command)
     processes.append(process)
     time.sleep(10)
