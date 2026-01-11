@@ -70,15 +70,57 @@ def verify_proxy_alive(proxy, retries=2, delay=5):
             time.sleep(delay)
     return False
 
-def pick_working_proxy():
+def savepr(time_out=20):
+    api_url = (
+        "https://api.proxyscrape.com/v3/free-proxy-list/get"
+        f"?request=displayproxies&protocol=http&anonymity=all"
+        f"&timeout={time_out}&proxy_format=protocolipport&format=text"
+    )
+
+    pr = requests.get(api_url, timeout=20).text.split("\n")
+    save_proxies_to_file(pr, len(pr))
+
+
+def save_proxies_to_file(proxies, count, filename="proxies.txt"):
+    with open(filename, "w") as f:
+        for proxy in proxies:
+            if proxy:
+                f.write(proxy.strip() + "\n")
+
+    logger.info(f"Successfully saved {count} proxies to {filename}")
+
+def pick_working_proxy(fetch_new_if_empty=True):
     proxies = read_proxies()
     random.shuffle(proxies)
+
     for proxy_string in proxies:
-        proto, _ = proxy_string.split("://", 1)
-        proxy = {proto + ":": proxy_string}
-        if verify_proxy_alive(proxy):
-            return proxy, proxy_string
-    raise RuntimeError("No alive proxies found")
+        try:
+            proto, _ = proxy_string.split("://", 1)
+            proxy = {proto + ":": proxy_string}
+
+            logger.info(f"Checking proxy: {proxy_string}")
+
+            if verify_proxy_alive(proxy):
+                logger.info(f"Using proxy: {proxy_string}")
+                return proxy, proxy_string
+
+        except Exception as e:
+            logger.warning(f"Proxy parse/verify failed: {proxy_string} | {e}")
+
+    # ---- No alive proxy found ----
+    if fetch_new_if_empty:
+        logger.warning("No alive proxies found. Fetching new proxy list...")
+
+        try:
+            savepr()                 # proxyscrape fetch
+            time.sleep(3)
+        except Exception as e:
+            logger.error(f"Proxy fetch failed: {e}")
+
+        # retry ONCE with fresh list
+        return pick_working_proxy(fetch_new_if_empty=False)
+
+    raise RuntimeError("No alive proxies available even after fetching new list")
 
 # ================= DEVICE ================= #
 
