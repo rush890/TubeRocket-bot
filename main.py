@@ -1,74 +1,141 @@
 import time
 import requests
 import random
-import sys
 import json
-import threading
-import os
+import sys
+import uuid
+from multiprocessing import Process, Manager
 
+# ================= CONFIG ================= #
 BASE_URL = "http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
 PROXY_FILE = "proxies.txt"
+DEVICE_FILE = "devices.json"
 TOKEN_FILE = "tokens.json"
 
-# ================= PROXY ================= #
-def save_proxies_to_file(proxies, count, filename='proxies.txt'):
-    try:
-        with open(filename, 'w') as file:
-            for proxy in proxies:
-                if proxy:
-                    file.write(f"{proxy}\n")
-        print(f"Successfully saved {count} proxies to {filename}.")
-    except Exception as e:
-        print(f"Error: {e}")
+DEVICE_MODELS = [
+    "OPPO CPH1859",
+    "Redmi Note 9",
+    "SM-A505F",
+    "Vivo Y20",
+    "Realme RMX2020"
+]
 
-def savepr(time_out=20):
-    api_url = f"https://api.proxyscrape.com/v3/free-proxy-list/get?request=displayproxies&protocol=http&anonymity=all&timeout={time_out}&proxy_format=protocolipport&format=text"
-    pr = requests.get(api_url).text.split("\n")
-    save_proxies_to_file(pr, len(pr))
+# ================= UTILS ================= #
 
-def read_proxies():
-    if not os.path.exists(PROXY_FILE):
-        savepr()
-    with open(PROXY_FILE, "r") as f:
-        return [p.strip() for p in f if p.strip()]
-
-def verify_proxy_alive(proxy, retries=1, delay=5):
-    for attempt in range(1, retries + 1):
-        try:
-            resp = requests.get(BASE_URL + "version-check", proxies=proxy, timeout=10)
-            if resp.status_code == 200 and "result" in resp.json():
-                print(f"Proxy alive (attempt {attempt})")
-                return True
-        except Exception as e:
-            print(f"Proxy check failed (attempt {attempt}): {e}")
-        if attempt < retries:
-            time.sleep(delay)
-    return False
-
-def pick_working_proxy(fetch_new_if_empty=True):
-    proxies = read_proxies()
-    random.shuffle(proxies)
-    for proxy_string in proxies:
-        proto, _ = proxy_string.split("://", 1)
-        proxy = {proto + ":": proxy_string}
-        print("Checking proxy:", proxy_string)
-        time.sleep(4)  # brief pause before check
-        if verify_proxy_alive(proxy):
-            print("Using proxy:", proxy_string)
-            return proxy, proxy_string
-    if fetch_new_if_empty:
-        print("No alive proxies found. Fetching new proxy list...")
-        savepr()
-        time.sleep(3)
-        return pick_working_proxy(fetch_new_if_empty=False)
-    raise RuntimeError("No alive proxies available even after fetching new list")
-
-# ================= API HELPERS ================= #
 def safe_json(resp):
     try:
         return resp.json()
     except Exception:
         return {"_raw": resp.text}
+
+# ================= PROXY ================= #
+
+def read_proxies():
+    try:
+        with open(PROXY_FILE, "r") as f:
+            return [p.strip() for p in f if p.strip()]
+    except:
+        return []
+
+def verify_proxy_alive(proxy, retries=2, delay=5):
+    for attempt in range(1, retries + 1):
+        try:
+            resp = requests.get(BASE_URL + "version-check", proxies=proxy, timeout=10)
+            if resp.status_code == 200 and "result" in resp.json():
+                print(f"[Proxy alive] {proxy} (attempt {attempt})")
+                return True
+        except Exception as e:
+            print(f"[Proxy failed] {proxy} (attempt {attempt}): {e}")
+        if attempt < retries:
+            time.sleep(delay)
+    return False
+
+def pick_working_proxy():
+    proxies = read_proxies()
+    random.shuffle(proxies)
+    for proxy_string in proxies:
+        proto, _ = proxy_string.split("://", 1)
+        proxy = {proto + ":": proxy_string}
+        if verify_proxy_alive(proxy):
+            return proxy, proxy_string
+    raise RuntimeError("No alive proxies found")
+
+# ================= DEVICE ================= #
+
+def random_device_profile():
+    return {
+        "android": str(random.choice([28, 29, 30])),
+        "device": random.choice(DEVICE_MODELS),
+        "locale": "IN",
+        "deviceToken": str(uuid.uuid4()) + ":APA91b" + uuid.uuid4().hex,
+        "sensors": {
+            "accelerometer": {"values": [round(random.uniform(-1,1),3),
+                                          round(random.uniform(5,10),3),
+                                          round(random.uniform(7,10),3)]},
+            "gyroscope": {"values": [round(random.uniform(-0.05,0.05),5),
+                                      round(random.uniform(-0.05,0.05),5),
+                                      round(random.uniform(-0.05,0.05),5)]},
+            "light": {"values": [random.randint(0,10)]},
+            "proximity": {"values": [5.0]}
+        }
+    }
+
+def load_devices():
+    try:
+        with open(DEVICE_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_devices(devices):
+    with open(DEVICE_FILE, "w") as f:
+        json.dump(devices, f, indent=2)
+
+def get_device_for_password(password):
+    devices = load_devices()
+    if password not in devices:
+        devices[password] = random_device_profile()
+        save_devices(devices)
+        print(f"[New device] created for password {password}")
+    return devices[password]
+
+# ================= TOKEN CACHE ================= #
+
+def load_tokens():
+    try:
+        with open(TOKEN_FILE, "r") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_tokens(tokens):
+    with open(TOKEN_FILE, "w") as f:
+        json.dump(tokens, f, indent=2)
+
+def get_token_for_password(password, proxy):
+    tokens = load_tokens()
+    token = tokens.get(password)
+
+    # Check if token exists and is still valid
+    if token:
+        try:
+            resp = requests.get(BASE_URL + "member", headers={"token": token}, proxies=proxy, timeout=10)
+            data = safe_json(resp)
+            if "result" in data:
+                return token
+            else:
+                print(f"[Token expired] for {password}")
+        except:
+            print(f"[Token check failed] for {password}")
+
+    # Sign in to get new token
+    new_token = sign_in(password, proxy)
+    if new_token:
+        tokens[password] = new_token
+        save_tokens(tokens)
+    return new_token
+
+# ================= API ================= #
 
 def api_get(endpoint, headers=None, proxy=None, timeout=15):
     r = requests.get(BASE_URL + endpoint, headers=headers or {}, proxies=proxy, timeout=timeout)
@@ -82,54 +149,65 @@ def api_put(endpoint, headers=None, data=None, proxy=None, timeout=15):
     r = requests.put(BASE_URL + endpoint, headers=headers or {}, data=data, proxies=proxy, timeout=timeout)
     return safe_json(r)
 
-# ================= TOKEN CHECK ================= #
-def is_token_invalid(resp):
-    return isinstance(resp, dict) and resp.get("retCode") == 4 and resp.get("retMessage") == "Token Invalid"
-
-def load_tokens():
-    if os.path.exists(TOKEN_FILE):
-        with open(TOKEN_FILE, "r") as f:
-            return json.load(f)
-    return {}
-
-def save_tokens(tokens):
-    with open(TOKEN_FILE, "w") as f:
-        json.dump(tokens, f, indent=2)
+# ================= AUTH ================= #
 
 # ================= AUTH ================= #
 
-def sign_in(password, proxy, retries=5):
-    for attempt in range(1, retries + 1):
+def sign_in(password, proxy):
+    device = get_device_for_password(password)
+
+    # version-check should already be proxy-verified, but still validate once
+    ver = api_get("version-check", proxy=proxy)
+    if "result" not in ver:
+        print(f"[version-check blocked]: {ver}")
+        return None
+
+    headers = {
+        "token": password,
+        "versionCode": str(ver["result"]["version_android"]),
+        "android": device["android"],
+        "device": device["device"],
+        "locale": device["locale"],
+        "deviceToken": device["deviceToken"],
+        "sensors": json.dumps(device["sensors"]),
+        "User-Agent": "okhttp/3.12.0"
+    }
+
+    # ---- retry with SAME proxy ----
+    for attempt in range(1, 4):
         try:
-            print(f"Signing in... attempt {attempt}/{retries}")
-            ver = api_get("version-check", proxy=proxy)
-            if "result" not in ver:
-                raise RuntimeError(f"version-check blocked: {ver}")
-            version = ver["result"]["version_android"]
-            time.sleep(2)
-            headers = {"token": password, "versionCode": str(version)}
-            resp = api_post("signIn", headers=headers, proxy=proxy)
+            print(f"[SIGN-IN] Attempt {attempt}/3")
 
-            if is_token_invalid(resp):
-                print("SIGN-IN BLOCKED RESPONSE (Token Invalid), retrying after 3s...")
-                time.sleep(3)
-                continue
+            resp = requests.post(
+                BASE_URL + "signIn",
+                headers=headers,
+                data="",                 # mobile app sends empty body
+                proxies=proxy,
+                timeout=15
+            )
 
-            if "result" not in resp:
-                print("SIGN-IN BLOCKED RESPONSE:", resp)
-                print("Backing off for 10 minutes...")
-                time.sleep(10 * 60)
-                continue
+            data = safe_json(resp)
 
-            return resp["result"]["token"]
+            if "result" in data:
+                print("[Sign-in success]")
+                return data["result"]["token"]
+
+            # explicit token invalid / blocked
+            print(f"[SIGN-IN FAILED] attempt {attempt}: {data}")
 
         except Exception as e:
-            print(f"Sign-in error: {e}")
+            print(f"[SIGN-IN ERROR] attempt {attempt}: {e}")
+
+        # wait before next attempt
+        if attempt < 3:
             time.sleep(5)
 
-    raise RuntimeError("SIGNIN_FAILED")
+    # ---- permanently blocked after 3 tries ----
+    print("[SIGN-IN BLOCKED] Marking account as blocked after 3 failed attempts")
+    return None
 
 # ================= WORKLOAD ================= #
+
 def get_coin(token, proxy):
     resp = api_get("member", headers={"token": token}, proxy=proxy)
     if "result" not in resp:
@@ -138,103 +216,79 @@ def get_coin(token, proxy):
 
 def get_video(token, proxy):
     resp = api_get("video", headers={"token": token}, proxy=proxy)
-    if is_token_invalid(resp):
-        raise RuntimeError("TOKEN_INVALID")
     if "result" not in resp:
         raise RuntimeError(f"video fetch blocked: {resp}")
     return resp["result"]["videoId"], resp["result"]["playSecond"]
 
 def claim_reward(token, video_id, proxy):
-    payload = json.dumps({"id": video_id,"playCount": 0,"playSecond": 0,"boost": 0,"status": ""})
-    resp = api_put("video", headers={"token": token,"Content-Type": "application/json; charset=UTF-8"}, data=payload, proxy=proxy)
-    if is_token_invalid(resp):
-        raise RuntimeError("TOKEN_INVALID")
+    payload = json.dumps({
+        "id": video_id,
+        "playCount": 0,
+        "playSecond": 0,
+        "boost": 0,
+        "status": ""
+    })
+    resp = api_put("video", headers={"token": token,"Content-Type":"application/json; charset=UTF-8"},
+                   data=payload, proxy=proxy)
     if "result" not in resp:
         raise RuntimeError(f"reward blocked: {resp}")
     return resp["result"]["coin"]
 
-# ================= THREAD WORKER ================= #
-def run_with_password(password, token_cache):
-    try:
-        proxy, proxy_str = pick_working_proxy()
-        print(f"[{password}] Using proxy: {proxy_str}")
+# ================= MAIN WORKER ================= #
 
-        token = token_cache.get(password)
-        if token:
-            print(f"[{password}] Found cached token. Verifying...")
-            try:
-                _ = get_coin(token, proxy)  # quick validation
-                print(f"[{password}] Token valid.")
-            except RuntimeError as e:
-                print(f"[{password}] Cached token invalid: {e}")
-                token = None
+def run(password):
+    proxy, proxy_str = pick_working_proxy()
+    print(f"[Session proxy] {proxy_str}")
 
-        if not token:
-            token = sign_in(password, proxy)
-            token_cache[password] = token
-            save_tokens(token_cache)
-            print(f"[{password}] New token acquired and saved.")
+    token = get_token_for_password(password, proxy)
+    if not token:
+        print(f"[Failed] Cannot get token for {password}")
+        return
 
-        coin = get_coin(token, proxy)
-        print(f"[{password}] Starting coin balance: {coin}")
+    coin = get_coin(token, proxy)
+    print(f"[Starting coin] {coin}")
 
-        total_earned = 0
-        error_count = 0
+    total_earned = 0
+    error_count = 0
 
-        while True:
-            try:
-                video_id, watch_time = get_video(token, proxy)
-                print(f"[{password}] Watching for {watch_time}s")
-                time.sleep(watch_time + 1)
+    while True:
+        try:
+            video_id, watch_time = get_video(token, proxy)
+            print(f"[Watching] {watch_time}s")
+            time.sleep(watch_time + 1)
 
-                new_coin = claim_reward(token, video_id, proxy)
-                earned = new_coin - coin
-                coin = new_coin
-                total_earned += earned
-                print(f"[{password}] Earned: {earned} | Total: {total_earned}")
+            new_coin = claim_reward(token, video_id, proxy)
+            earned = new_coin - coin
+            coin = new_coin
+            total_earned += earned
+            print(f"[Earned] {earned} | Total: {total_earned}")
+            error_count = 0
+
+        except Exception as e:
+            print(f"[Error] {e}")
+            error_count += 1
+            if error_count >= 3:
+                print("[Cooling down 30 min due to repeated errors]")
+                time.sleep(20*60)
                 error_count = 0
+            else:
+                time.sleep(120)
 
-            except RuntimeError as e:
-                if str(e) == "TOKEN_INVALID":
-                    print(f"[{password}] Token invalid, re-signing in...")
-                    token = sign_in(password, proxy)
-                    token_cache[password] = token
-                    save_tokens(token_cache)
-                    coin = get_coin(token, proxy)
-                    continue
+# ================= MULTI-PASSWORD ================= #
 
-                error_count += 1
-                print(f"[{password}] Workload error: {e}")
-                if error_count >= 3:
-                    print(f"[{password}] Too many errors. Rotating proxy and cooling down 30 mins...")
-                    proxy, proxy_str = pick_working_proxy()
-                    print(f"[{password}] New proxy: {proxy_str}")
-                    token = sign_in(password, proxy)
-                    token_cache[password] = token
-                    save_tokens(token_cache)
-                    coin = get_coin(token, proxy)
-                    error_count = 0
-                    time.sleep(3*60)
-                else:
-                    time.sleep(120)
+def run_all(password_list):
+    jobs = []
+    for pwd in password_list:
+        p = Process(target=run, args=(pwd,))
+        p.start()
+        jobs.append(p)
+        time.sleep(random.randint(10,20))
 
-    except Exception as e:
-        print(f"[{password}] THREAD ERROR: {e}")
+    for j in jobs:
+        j.join()
 
-# ================= MULTI-THREAD ENTRY ================= #
-def run_all_passwords(password_list):
-    token_cache = load_tokens()
-    threads = []
-    for pw in password_list:
-        t = threading.Thread(target=run_with_password, args=(pw, token_cache))
-        t.start()
-        threads.append(t)
-        time.sleep(random.randint(10,20))  # small stagger to avoid API spike
+# ================= ENTRY ================= #
 
-    for t in threads:
-        t.join()
-
-# ================= MAIN ================= #
 if __name__ == "__main__":
     password_list = [
     '9ad14420a63411ee8dec29e7b2d7d8ec', 'b0115460a63411ee8dec29e7b2d7d8ec',
@@ -252,4 +306,4 @@ if __name__ == "__main__":
         print("ERROR: Provide at least one password")
         sys.exit(1)
 
-    run_all_passwords(password_list)
+    run_all(password_list)
