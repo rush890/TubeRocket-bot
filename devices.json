@@ -1,0 +1,578 @@
+{
+  "9ad14420a63411ee8dec29e7b2d7d8ec": {
+    "android": "30",
+    "device": "OPPO CPH1859",
+    "locale": "IN",
+    "deviceToken": "a784f96d-8dcb-42d2-bdf8-8e00fdbc721d:APA91b8e171d438f0d48f2a7c9879997a134f8",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.886,
+          5.258,
+          9.958
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.0278,
+          0.02735,
+          -0.04522
+        ]
+      },
+      "light": {
+        "values": [
+          8
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "b0115460a63411ee8dec29e7b2d7d8ec": {
+    "android": "28",
+    "device": "SM-A505F",
+    "locale": "IN",
+    "deviceToken": "678cb3bc-c47c-45c7-b2f7-6c71fdf5ba22:APA91b83fb58a73b1b47fd8b2e77c05679cc8f",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.347,
+          6.964,
+          7.494
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.0219,
+          -0.02479,
+          -0.03263
+        ]
+      },
+      "light": {
+        "values": [
+          2
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "cf203a10a63411ee8dec29e7b2d7d8ec": {
+    "android": "28",
+    "device": "Vivo Y20",
+    "locale": "IN",
+    "deviceToken": "ebf41307-afa4-40e7-8161-4c2b890be468:APA91b6fe3da5d8c6b4af79e01513a02c4eb88",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.962,
+          7.53,
+          9.915
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.03376,
+          -0.04225,
+          0.0061
+        ]
+      },
+      "light": {
+        "values": [
+          3
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "b0521f80a4d711ee8dec29e7b2d7d8ec": {
+    "android": "28",
+    "device": "SM-A505F",
+    "locale": "IN",
+    "deviceToken": "5d273135-abdf-4c8c-a6e4-07cd6382497f:APA91bcf8a3ad34591402cbfb04feee2222f2c",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.418,
+          5.565,
+          9.94
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.03793,
+          -0.02064,
+          -0.04541
+        ]
+      },
+      "light": {
+        "values": [
+          8
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "f9ea0dc0a63411ee8dec29e7b2d7d8ec": {
+    "android": "30",
+    "device": "Vivo Y20",
+    "locale": "IN",
+    "deviceToken": "619d8b55-2a5c-409c-b971-f7c079b54fe9:APA91be28b7302b0a04c0c8889bb96d6e9c6f4",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.864,
+          6.145,
+          8.149
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.02099,
+          -0.00081,
+          0.04467
+        ]
+      },
+      "light": {
+        "values": [
+          3
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "21f550d0a53c11ee8dec29e7b2d7d8ec": {
+    "android": "28",
+    "device": "SM-A505F",
+    "locale": "IN",
+    "deviceToken": "93ea403e-55dc-43fe-8872-3cc31d464c7b:APA91b6272e169178c45fabc47d7593dfdc092",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.881,
+          8.534,
+          8.747
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.01683,
+          -8e-05,
+          -0.0017
+        ]
+      },
+      "light": {
+        "values": [
+          5
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "3ac6da30a93711ee8dec29e7b2d7d8ec": {
+    "android": "30",
+    "device": "SM-A505F",
+    "locale": "IN",
+    "deviceToken": "122e5c36-a214-4ca8-947f-94c0ec1dabb7:APA91bb8194c7659d14c41ba66449117a7a08f",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.782,
+          7.341,
+          7.767
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.01749,
+          0.03595,
+          -0.02116
+        ]
+      },
+      "light": {
+        "values": [
+          5
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "37ec0070afbc11eeb6ec9f4e674dc15b": {
+    "android": "29",
+    "device": "Realme RMX2020",
+    "locale": "IN",
+    "deviceToken": "52057688-aee0-40af-8a76-1e060393e4e3:APA91bcb4810d0787142508395740e30a650c8",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.427,
+          8.56,
+          7.337
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.03047,
+          0.00379,
+          0.0152
+        ]
+      },
+      "light": {
+        "values": [
+          10
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "2709d2d0b4f011eeb6ec9f4e674dc15b": {
+    "android": "30",
+    "device": "SM-A505F",
+    "locale": "IN",
+    "deviceToken": "d9c45c54-fffe-4538-bbb0-6220df14f7ec:APA91b4ff3a1c394734428be9fdc47bf1a2b06",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.698,
+          6.977,
+          9.05
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.00147,
+          -0.04375,
+          0.0236
+        ]
+      },
+      "light": {
+        "values": [
+          6
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "a00c4220b4f111eeb6ec9f4e674dc15b": {
+    "android": "28",
+    "device": "Realme RMX2020",
+    "locale": "IN",
+    "deviceToken": "5162edd6-2103-442a-a094-8eb4915c4857:APA91b4d6306ce5ae242b596d8e119b5cb45db",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.057,
+          5.082,
+          8.91
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.02516,
+          0.00223,
+          0.04366
+        ]
+      },
+      "light": {
+        "values": [
+          0
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "7f60c8a0b4df11eeb6ec9f4e674dc15b": {
+    "android": "29",
+    "device": "Realme RMX2020",
+    "locale": "IN",
+    "deviceToken": "cec6c05b-32a9-4642-bfd4-f7a97aa20245:APA91b62c11a75bf294a87bc472422dcdd2894",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.014,
+          8.872,
+          9.572
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.02088,
+          0.01787,
+          -0.03084
+        ]
+      },
+      "light": {
+        "values": [
+          4
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "ed23c840b4f011eeb6ec9f4e674dc15b": {
+    "android": "29",
+    "device": "Realme RMX2020",
+    "locale": "IN",
+    "deviceToken": "3ce0e8c4-5701-43cd-99dd-4a989c645a92:APA91b4501d16f10144639ac64992a319ea2bc",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.278,
+          7.329,
+          8.493
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.04585,
+          -0.04431,
+          -0.0238
+        ]
+      },
+      "light": {
+        "values": [
+          4
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "51470170b4f111eeb6ec9f4e674dc15b": {
+    "android": "30",
+    "device": "Redmi Note 9",
+    "locale": "IN",
+    "deviceToken": "88df5772-68ad-4bbf-a5c9-24d6112da3fd:APA91ba7485646189f4072b21825ae2faff731",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.304,
+          8.766,
+          7.908
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.04859,
+          -0.034,
+          0.01745
+        ]
+      },
+      "light": {
+        "values": [
+          9
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "ac15ba4047f811ed9bb601573df1ee27": {
+    "android": "29",
+    "device": "Vivo Y20",
+    "locale": "IN",
+    "deviceToken": "59f2005d-c631-43fd-9ac5-092acc59ba37:APA91b862906c96c3d4fecbf7c436e0b53def6",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.939,
+          6.788,
+          7.202
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.02857,
+          0.0004,
+          -0.04333
+        ]
+      },
+      "light": {
+        "values": [
+          1
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "429235c0d1ca11eca19befd8b74558ba": {
+    "android": "28",
+    "device": "Vivo Y20",
+    "locale": "IN",
+    "deviceToken": "39ccddcb-e277-4f38-8711-9aed596b7b30:APA91b24440d0f5b554e0c807ac8a2b11c6b1a",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.369,
+          8.286,
+          9.42
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.04116,
+          -0.01194,
+          0.04236
+        ]
+      },
+      "light": {
+        "values": [
+          2
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "f3161e40a63311ee8dec29e7b2d7d8ec": {
+    "android": "29",
+    "device": "Realme RMX2020",
+    "locale": "IN",
+    "deviceToken": "5ef47fb7-6ae3-4490-a010-70edf4f1aae9:APA91bbace78937cda43d1924aeb8b21450d6c",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.507,
+          7.143,
+          8.13
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.0263,
+          0.04079,
+          0.03642
+        ]
+      },
+      "light": {
+        "values": [
+          10
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "397a7fb0d1e811eca462957b5204fdf1": {
+    "android": "30",
+    "device": "SM-A505F",
+    "locale": "IN",
+    "deviceToken": "082a1ae3-f5ee-4491-9124-28d0b2ae436a:APA91bcfed31685511473ab2d79b85cd460659",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          0.017,
+          7.153,
+          8.777
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          -0.01117,
+          0.03064,
+          0.02344
+        ]
+      },
+      "light": {
+        "values": [
+          4
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  },
+  "36894cf0e54411f091a1d35742e4bdca": {
+    "android": "28",
+    "device": "OPPO CPH1859",
+    "locale": "IN",
+    "deviceToken": "080da699-530d-4d2a-8664-fbcf7edd59d4:APA91bfbfd8d7adc1f46f58a212d6b5bce3025",
+    "sensors": {
+      "accelerometer": {
+        "values": [
+          -0.057,
+          6.157,
+          7.732
+        ]
+      },
+      "gyroscope": {
+        "values": [
+          0.01507,
+          -0.04969,
+          -0.01907
+        ]
+      },
+      "light": {
+        "values": [
+          2
+        ]
+      },
+      "proximity": {
+        "values": [
+          5.0
+        ]
+      }
+    }
+  }
+}
