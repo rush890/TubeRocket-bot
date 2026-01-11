@@ -5,6 +5,26 @@ import json
 import sys
 import uuid
 from multiprocessing import Process, Manager
+import logging
+from logging.handlers import RotatingFileHandler
+
+LOG_FILE = "runtime.log"
+
+logger = logging.getLogger("tube")
+logger.setLevel(logging.INFO)
+
+handler = RotatingFileHandler(
+    LOG_FILE,
+    maxBytes=2 * 1024 * 1024,   # 2MB
+    backupCount=2
+)
+
+formatter = logging.Formatter(
+    "%(asctime)s | %(levelname)s | %(message)s"
+)
+
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 # ================= CONFIG ================= #
 BASE_URL = "http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
@@ -42,10 +62,10 @@ def verify_proxy_alive(proxy, retries=2, delay=5):
         try:
             resp = requests.get(BASE_URL + "version-check", proxies=proxy, timeout=10)
             if resp.status_code == 200 and "result" in resp.json():
-                print(f"[Proxy alive] {proxy} (attempt {attempt})")
+                logger.info(f"[Proxy alive] {proxy} (attempt {attempt})")
                 return True
         except Exception as e:
-            print(f"[Proxy failed] {proxy} (attempt {attempt}): {e}")
+            logger.info(f"[Proxy failed] {proxy} (attempt {attempt}): {e}")
         if attempt < retries:
             time.sleep(delay)
     return False
@@ -96,7 +116,7 @@ def get_device_for_password(password):
     if password not in devices:
         devices[password] = random_device_profile()
         save_devices(devices)
-        print(f"[New device] created for password {password}")
+        logger.info(f"[New device] created for password {password}")
     return devices[password]
 
 # ================= TOKEN CACHE ================= #
@@ -124,9 +144,9 @@ def get_token_for_password(password, proxy):
             if "result" in data:
                 return token
             else:
-                print(f"[Token expired] for {password}")
+                logger.info(f"[Token expired] for {password}")
         except:
-            print(f"[Token check failed] for {password}")
+            logger.info(f"[Token check failed] for {password}")
 
     # Sign in to get new token
     new_token = sign_in(password, proxy)
@@ -159,7 +179,7 @@ def sign_in(password, proxy):
     # version-check should already be proxy-verified, but still validate once
     ver = api_get("version-check", proxy=proxy)
     if "result" not in ver:
-        print(f"[version-check blocked]: {ver}")
+        logger.info(f"[version-check blocked]: {ver}")
         return None
 
     headers = {
@@ -176,7 +196,7 @@ def sign_in(password, proxy):
     # ---- retry with SAME proxy ----
     for attempt in range(1, 4):
         try:
-            print(f"[SIGN-IN] Attempt {attempt}/3")
+            logger.info(f"[SIGN-IN] Attempt {attempt}/3")
 
             resp = requests.post(
                 BASE_URL + "signIn",
@@ -189,21 +209,21 @@ def sign_in(password, proxy):
             data = safe_json(resp)
 
             if "result" in data:
-                print("[Sign-in success]")
+                logger.info("[Sign-in success]")
                 return data["result"]["token"]
 
             # explicit token invalid / blocked
-            print(f"[SIGN-IN FAILED] attempt {attempt}: {data}")
+            logger.info(f"[SIGN-IN FAILED] attempt {attempt}: {data}")
 
         except Exception as e:
-            print(f"[SIGN-IN ERROR] attempt {attempt}: {e}")
+            logger.info(f"[SIGN-IN ERROR] attempt {attempt}: {e}")
 
         # wait before next attempt
         if attempt < 3:
             time.sleep(5)
 
     # ---- permanently blocked after 3 tries ----
-    print("[SIGN-IN BLOCKED] Marking account as blocked after 3 failed attempts")
+    logger.info("[SIGN-IN BLOCKED] Marking account as blocked after 3 failed attempts")
     return None
 
 # ================= WORKLOAD ================= #
@@ -238,15 +258,15 @@ def claim_reward(token, video_id, proxy):
 
 def run(password):
     proxy, proxy_str = pick_working_proxy()
-    print(f"[Session proxy] {proxy_str}")
+    logger.info(f"[Session proxy] {proxy_str}")
 
     token = get_token_for_password(password, proxy)
     if not token:
-        print(f"[Failed] Cannot get token for {password}")
+        logger.info(f"[Failed] Cannot get token for {password}")
         return
 
     coin = get_coin(token, proxy)
-    print(f"[Starting coin] {coin}")
+    logger.info(f"[Starting coin] {coin}")
 
     total_earned = 0
     error_count = 0
@@ -254,21 +274,21 @@ def run(password):
     while True:
         try:
             video_id, watch_time = get_video(token, proxy)
-            print(f"[Watching] {watch_time}s")
+            logger.info(f"[Watching] {watch_time}s")
             time.sleep(watch_time + 1)
 
             new_coin = claim_reward(token, video_id, proxy)
             earned = new_coin - coin
             coin = new_coin
             total_earned += earned
-            print(f"[Earned] {earned} | Total: {total_earned}")
+            logger.info(f"[Earned] {earned} | Total: {total_earned}")
             error_count = 0
 
         except Exception as e:
-            print(f"[Error] {e}")
+            logger.info(f"[Error] {e}")
             error_count += 1
             if error_count >= 3:
-                print("[Cooling down 30 min due to repeated errors]")
+                logger.info("[Cooling down 30 min due to repeated errors]")
                 time.sleep(20*60)
                 error_count = 0
             else:
@@ -303,7 +323,7 @@ if __name__ == "__main__":
 ]
 
     if not password_list:
-        print("ERROR: Provide at least one password")
+        logger.info("ERROR: Provide at least one password")
         sys.exit(1)
 
     run_all(password_list)
