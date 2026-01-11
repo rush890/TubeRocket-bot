@@ -18,7 +18,7 @@ user_passwords = [
 ]
 
 BASE_URL = "http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
-COIN_HISTORY_FILE = "coin_history.json"
+COIN_HISTORY_FILE = "coins_metadata/coin_history.json"
 
 # Functions from tube_all.py
 def read_proxies(file_path):
@@ -103,7 +103,7 @@ def save_coin_history(history):
 def save_metrics_to_txt(total_coins, total_earned, account_coins):
     """Save metrics report to text file"""
     try:
-        with open('coin_metrics.txt', 'w') as f:
+        with open('coins_metadata/coin_metrics.txt', 'w') as f:
             f.write("=" * 60 + "\n")
             f.write("TOTAL COINS CHECKER - REPORT\n")
             f.write("=" * 60 + "\n\n")
