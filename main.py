@@ -5,6 +5,9 @@ import json
 import sys
 import uuid
 from multiprocessing import Process, Manager
+from old_script.replit_keep_alive import keep_alive
+keep_alive()
+
 
 # ================= CONFIG ================= #
 BASE_URL = "http://mutupipe.westus2.cloudapp.azure.com:3000/api/"
