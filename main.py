@@ -219,10 +219,13 @@ def sign_in(password, proxy):
     }
 
     # ---- retry with SAME proxy ----
-    for attempt in range(1, 4):
+    for attempt in range(1, 5):
         try:
-            print(f"[SIGN-IN] Attempt {attempt}/3")
-
+            print(f"[SIGN-IN] Attempt {attempt}/4")
+            if attempt==4:
+                print("checking without proxy...")
+                proxy = None   
+                time.sleep(10) 
             resp = requests.post(
                 BASE_URL + "signIn",
                 headers=headers,
